@@ -2,8 +2,8 @@
 class Parley < Formula
   desc "Isolated Neovim chat application"
   homepage "https://github.com/xianxu/parley.nvim"
-  url "https://github.com/xianxu/parley.nvim/archive/refs/tags/v2.4.4.tar.gz"
-  sha256 "f991ea640b8d854bdb5e42992ad3ac223444c5cea3a6661b5d262312b28103d8"
+  url "https://github.com/xianxu/parley.nvim/archive/refs/tags/v2.5.0.tar.gz"
+  sha256 "022cd5a962522c3198f3d31039cbe4fd526c6a6da1dc31a9e8c7efdcc036db45"
   license "MIT"
 
   depends_on "neovim"
