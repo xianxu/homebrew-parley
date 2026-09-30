@@ -2,20 +2,151 @@
 class Parley < Formula
   desc "Isolated Neovim chat application"
   homepage "https://github.com/xianxu/parley.nvim"
-  url "https://github.com/xianxu/parley.nvim/archive/refs/tags/v2.7.0.tar.gz"
-  sha256 "b43714d5d6a25c5b95965c5fe1cd974c889476e010479f7e3463d337279ba3c1"
+  url "https://github.com/xianxu/parley.nvim/archive/refs/tags/v2.8.0.tar.gz"
+  sha256 "f4001e25463ed24aabf7f5c376e1ef759f89f2035cfabdffa73910c40b53afd0"
   license "MIT"
 
   depends_on "neovim"
   depends_on "ripgrep"
+  depends_on "python@3.13" => :build
+
+  resource "editor-blink.cmp" do
+    url "https://codeload.github.com/saghen/blink.cmp/tar.gz/78336bc89ee5365633bcf754d93df01678b5c08f"
+    sha256 "74a12c86fd74ea28b37cccad0cf41ec2afff6a0ee07747ad38cc6eee869cce38"
+  end
+
+  resource "editor-catppuccin" do
+    url "https://codeload.github.com/catppuccin/nvim/tar.gz/edefef779ab08ce1a4a404713e3012b0d202bd35"
+    sha256 "92a674e334d9d3905316815fd977af9e127b7bc476b9b7d3798f8a61b8da54e1"
+  end
+
+  resource "editor-lazy.nvim" do
+    url "https://codeload.github.com/folke/lazy.nvim/tar.gz/85c7ff3711b730b4030d03144f6db6375044ae82"
+    sha256 "aa21e5d973015a8fdf5000dd3becbdcc12086751be5ffda7bfd54e2e20d02068"
+  end
+
+  resource "editor-lualine.nvim" do
+    url "https://codeload.github.com/nvim-lualine/lualine.nvim/tar.gz/221ce6b2d999187044529f49da6554a92f740a96"
+    sha256 "0bb7ae9af7c16ce56292f0fb38f57dfbdd48a071a5f08e0bff8bed6b9b02006b"
+  end
+
+  resource "editor-markdown-preview.nvim" do
+    url "https://codeload.github.com/iamcco/markdown-preview.nvim/tar.gz/a923f5fc5ba36a3b17e289dc35dc17f66d0548ee"
+    sha256 "03ca7c0f1862990ecb7aeba96072e51ac86db6580d693c4594284f9d45f8e8c5"
+  end
+
+  resource "editor-nightfox" do
+    url "https://codeload.github.com/EdenEast/nightfox.nvim/tar.gz/4dacd3f0185a2227bdf3b6c0975a8f0bf87cac9a"
+    sha256 "32ea7b73371f4ec469535b271adc1d6a06d97ef6754500c04056a21f6193aa77"
+  end
+
+  resource "editor-onedark" do
+    url "https://codeload.github.com/navarasu/onedark.nvim/tar.gz/df4792accde9db0043121f32628bcf8e645d9aea"
+    sha256 "ad83b5b7e028666e939a3ab7cfee92128c8bb16616632443f270138587684e3b"
+  end
+
+  resource "editor-plenary.nvim" do
+    url "https://codeload.github.com/nvim-lua/plenary.nvim/tar.gz/74b06c6c75e4eeb3108ec01852001636d85a932b"
+    sha256 "d9e7562417b49f4c9c0bf6f7edeb1d798665d967dbfaad428b893c28f36478ba"
+  end
+
+  resource "editor-solarized" do
+    url "https://codeload.github.com/altercation/vim-colors-solarized/tar.gz/528a59f26d12278698bb946f8fb82a63711eec21"
+    sha256 "2dde12f226e9400a5a8c9288dfd43ec52e26bb47b4641f6ccb940e8cda712fb7"
+  end
+
+  resource "editor-telescope.nvim" do
+    url "https://codeload.github.com/nvim-telescope/telescope.nvim/tar.gz/a0bbec21143c7bc5f8bb02e0005fa0b982edc026"
+    sha256 "0fe624b8a7974827bafd5930d206135f5d8d82cfcc979e0df6f0bee6c98478b5"
+  end
+
+  resource "editor-tokyonight" do
+    url "https://codeload.github.com/folke/tokyonight.nvim/tar.gz/cdc07ac78467a233fd62c493de29a17e0cf2b2b6"
+    sha256 "8b35026b9eda8d9e2f15e3282f91aa92e8a012932ed96c8c95168399d06ce2a8"
+  end
+
+  on_macos do
+    on_arm do
+      resource "editor-markdown-preview-binary" do
+        url "https://github.com/iamcco/markdown-preview.nvim/releases/download/v0.0.10/markdown-preview-macos-arm64.tar.gz"
+        sha256 "339f9a968fbbc4197259f811dd3f9780459f9d903532a29befcf16679b97babd"
+      end
+    end
+    on_intel do
+      resource "editor-markdown-preview-binary" do
+        url "https://github.com/iamcco/markdown-preview.nvim/releases/download/v0.0.10/markdown-preview-macos.tar.gz"
+        sha256 "580552e6506f858d9e7b2215888d62edbf5511e3201dd62c91afe502c3142204"
+      end
+    end
+  end
+  on_linux do
+    on_intel do
+      resource "editor-markdown-preview-binary" do
+        url "https://github.com/iamcco/markdown-preview.nvim/releases/download/v0.0.10/markdown-preview-linux.tar.gz"
+        sha256 "95eb4d2774c62e93998c41361fe2276a5134ef173dddab29026d34ef80ad44ef"
+      end
+    end
+  end
 
   def install
+    odie "unsupported editor bundle platform: Linux ARM" if OS.linux? && !Hardware::CPU.intel?
     libexec.install Dir["*", ".*"] - [".", "..", ".git"]
+    bundle = libexec/"editor-bundle"
+    resource("editor-blink.cmp").stage do
+      (bundle/"plugins/blink.cmp").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-catppuccin").stage do
+      (bundle/"plugins/catppuccin").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-lazy.nvim").stage do
+      (bundle/"plugins/lazy.nvim").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-lualine.nvim").stage do
+      (bundle/"plugins/lualine.nvim").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-markdown-preview.nvim").stage do
+      (bundle/"plugins/markdown-preview.nvim").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-nightfox").stage do
+      (bundle/"plugins/nightfox").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-onedark").stage do
+      (bundle/"plugins/onedark").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-plenary.nvim").stage do
+      (bundle/"plugins/plenary.nvim").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-solarized").stage do
+      (bundle/"plugins/solarized").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-telescope.nvim").stage do
+      (bundle/"plugins/telescope.nvim").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    resource("editor-tokyonight").stage do
+      (bundle/"plugins/tokyonight").install Dir["*", ".*"] - [".", "..", ".git"]
+    end
+    platform = OS.mac? ? (Hardware::CPU.arm? ? "macos-arm64" : "macos") : "linux"
+    preview = {
+      "macos-arm64" => ["markdown-preview-macos-arm64", "plugins/markdown-preview.nvim/app/bin/markdown-preview-macos-arm64"],
+      "macos" => ["markdown-preview-macos", "plugins/markdown-preview.nvim/app/bin/markdown-preview-macos"],
+      "linux" => ["markdown-preview-linux", "plugins/markdown-preview.nvim/app/bin/markdown-preview-linux"],
+    }.fetch(platform)
+    resource("editor-markdown-preview-binary").stage do
+      destination = bundle/preview[1]
+      destination.dirname.mkpath
+      destination.dirname.install preview[0] => destination.basename.to_s
+      destination.chmod 0755
+    end
+    system Formula["python@3.13"].opt_bin/"python3.13", libexec/"scripts/editor-dependencies.py",
+      "--runtime", libexec, "--platform", platform, "--profile", "app",
+      "seal", "--bundle", bundle
     (libexec/"packaging/parley").chmod 0755
     (share/"parley/config").install libexec/"packaging/starter-config/init.lua"
     (bin/"parley").write_env_script libexec/"packaging/parley",
       PARLEY_NVIM: Formula["neovim"].opt_bin/"nvim",
       PARLEY_RUNTIME: libexec,
+      PARLEY_EDITOR_BUNDLE: libexec/"editor-bundle",
+      PARLEY_EDITOR_BUNDLE_INSTALLED: "1",
       PARLEY_STARTER: share/"parley/config/init.lua"
   end
 
